@@ -1,4 +1,4 @@
-name: Rubocop
+name: Linting
 
 on:
   pull_request:
@@ -8,7 +8,17 @@ on:
       - 'develop'
 
 jobs:
-  build:
+  markdown:
+    name: Run Markdown linting
+    runs-on: ubuntu-latest
+    env:
+      api-dir: ./
+    steps:
+      - uses: actions/checkout@v2
+      - uses: articulate/actions-markdownlint@v1
+        with:
+          files: '**/*.md'
+  rubocop:
     name: Run Rubocop Linting
     runs-on: ubuntu-latest
     env:
