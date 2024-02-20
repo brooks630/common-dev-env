@@ -1,4 +1,4 @@
-name: Rubocop
+name: Markdown
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Run Rubocop Linting
+    name: Run Markdown linting
     runs-on: ubuntu-latest
     env:
       api-dir: ./
