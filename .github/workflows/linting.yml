@@ -9,7 +9,7 @@ on:
 
 jobs:
   markdown:
-    name: Run Markdown linting
+    name: Run Markdown Linting
     runs-on: ubuntu-latest
     env:
       api-dir: ./
