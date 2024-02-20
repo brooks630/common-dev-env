@@ -21,7 +21,7 @@ jobs:
           bundler-cache: true
       - name: Install Rubocop
         working-directory: ${{env.api-dir}}
-        run: gem install rubocop
+        run: gem install rubocop -v 1.28
       - name: Check Rubocop Styles
         working-directory: ${{env.api-dir}}
         run: rubocop
