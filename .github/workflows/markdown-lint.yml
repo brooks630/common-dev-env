@@ -14,4 +14,7 @@ jobs:
     env:
       api-dir: ./
     steps:
+      - uses: actions/checkout@v2
       - uses: articulate/actions-markdownlint@v1
+        with:
+          files: '**/*.md'
