@@ -1,0 +1,37 @@
+name: Linting
+
+on:
+  pull_request:
+  push:
+    branches:
+      - 'master'
+      - 'develop'
+
+jobs:
+  markdown:
+    name: Run Markdown Linting
+    runs-on: ubuntu-latest
+    env:
+      api-dir: ./
+    steps:
+      - uses: actions/checkout@v2
+      - uses: articulate/actions-markdownlint@v1
+        with:
+          files: '**/*.md'
+  rubocop:
+    name: Run Rubocop Linting
+    runs-on: ubuntu-latest
+    env:
+      api-dir: ./
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.0
+          bundler-cache: true
+      - name: Install Rubocop
+        working-directory: ${{env.api-dir}}
+        run: gem install rubocop
+      - name: Check Rubocop Styles
+        working-directory: ${{env.api-dir}}
+        run: rubocop
