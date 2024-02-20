@@ -19,6 +19,9 @@ jobs:
         with:
           ruby-version: 3.3.0
           bundler-cache: true
+      - name: Install Rubocop
+        working-directory: ${{env.api-dir}}
+        run: gem install rubocop
       - name: Check Rubocop Styles
         working-directory: ${{env.api-dir}}
-        run: bundle exec rubocop
+        run: rubocop
