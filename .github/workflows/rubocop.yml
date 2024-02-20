@@ -1,0 +1,29 @@
+name: Rubocop
+
+on:
+  pull_request:
+  push:
+    branches:
+      - 'master'
+      - 'develop'
+
+jobs:
+  build:
+    name: Run Rubocop Linting
+    runs-on: ubuntu-latest
+    env:
+      api-dir: ./
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.0
+          bundler-cache: true
+      - name: Run bundle install
+        working-directory: ${{env.api-dir}}
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
+      - name: Check Rubocop Styles
+        working-directory: ${{env.api-dir}}
+        run: bundle exec rubocop
