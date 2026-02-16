@@ -224,7 +224,7 @@ There are no fragments needed when using this. The Management Console will be av
 
 Rabbit is available over port 5672 and TLS on port 5671.
 
-TLS presents a self signed cert. If verification is needed a copy of the ca certificate is [here](scripts/docker/rabbitmq/certs/ca_certificate.crt). The host has been set to `rabbitmq` for host verification in most common libraries, although will only work within the docker network.
+TLS presents a self signed cert. If verification is needed then use the provided [ca certificate](scripts/docker/rabbitmq/certs/ca_certificate.crt). The host has been set to `rabbitmq` for host verification in most common libraries, although will only work within the docker network.
 
 MTLS is not enabled, although a [client certificate pem](scripts/docker/rabbitmq/certs/client_certificate.pem) and [client key pem](scripts/docker/rabbitmq/certs/client_key.pem) have been generated as part of the certificate set for potential future use.
 
@@ -300,7 +300,7 @@ Applications using OAuth flows or the OpenID Connect protocol can use Keycloak f
 
 JWT tokens issued from the `development` realm have been configured to mimic those issued by Microsoft ADFS servers. In particular, the LDAP `cn` field is mapped to the `UserName` claim in JWT tokens along with the `Office` claim mapped from the `physicalDeliveryOfficeName` in the LDAP database and the `group` claim listing the user's group memberships.
 
-A [JSON export](scripts/docker/auth/keycloak/development_realm.json) of the `development` realm is used to configure the realm. If further configuration of the realm is required, you can make changes in the admin console and re-export the realm using the procedure described in "Exporting a realm" [here](https://hub.docker.com/r/jboss/keycloak/#exporting-a-realm).
+A [JSON export](scripts/docker/auth/keycloak/development_realm.json) of the `development` realm is used to configure the realm. If further configuration of the realm is required, you can make changes in the admin console and re-export the realm using the procedure described in "Exporting a realm" section of the [documentation](https://hub.docker.com/r/jboss/keycloak/#exporting-a-realm).
 
 The exported JSON can then be merged back into this repository and reused.
 
@@ -334,7 +334,7 @@ _Running Cadence web locally_
 
 A default Localstack configuration is provided with a minimal number of enabled services available (S3 only at present). Localstack does not _require_ the use of any other external configuration file (as applications can manage buckets programatically through methods such as the [AWS SDK](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/examples-s3-buckets.html)).
 
-However, if additional configuration (such as new buckets) are necessary before application startup, you can use a `localstack-init-fragment.sh` to perform this provisioning; an example of which is provided [here](snippets/localstack-init-fragment.sh).
+However, if additional configuration (such as new buckets) are necessary before application startup, you can use a `localstack-init-fragment.sh` to perform this provisioning; like [this example](snippets/localstack-init-fragment.sh).
 
 Localstack is available at <http://localstack:4566> within the Docker network, and <http://localhost:4566> on the host.
 
