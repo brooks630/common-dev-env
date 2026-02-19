@@ -17,3 +17,5 @@ RUN rabbitmq-plugins --offline enable rabbitmq_shovel rabbitmq_shovel_management
 # Streams are a new persistent and replicated data structure, handy to persist historic messages for a period of time
 # https://www.rabbitmq.com/stream.html
 RUN rabbitmq-plugins --offline enable rabbitmq_stream
+# Expose Prometheus metrics for monitoring/dashboards.
+RUN rabbitmq-plugins --offline enable rabbitmq_prometheus

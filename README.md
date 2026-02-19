@@ -131,6 +131,8 @@ The list of allowable commodity values is:
 16. ibmmq
 17. localstack
 18. valkey
+19. prometheus
+20. grafana
 
 The file may optionally also indicate that one or more services are resource intensive ("expensive") when starting up. The dev env will start those containers seperately - 3 at a time - and wait until each are declared healthy (or crash and get restarted 10 times) before starting any more.
 
@@ -228,7 +230,7 @@ TLS presents a self signed cert. If verification is needed then use the provided
 
 MTLS is not enabled, although a [client certificate pem](scripts/docker/rabbitmq/certs/client_certificate.pem) and [client key pem](scripts/docker/rabbitmq/certs/client_key.pem) have been generated as part of the certificate set for potential future use.
 
-Currently, only the `rabbitmq_management`, `rabbitmq_consistent_hash_exchange`, `rabbitmq_shovel`, `rabbitmq_shovel_management` and `rabbitmq_stream` plugins are enabled.
+Currently, only the `rabbitmq_management`, `rabbitmq_consistent_hash_exchange`, `rabbitmq_shovel`, `rabbitmq_shovel_management`, `rabbitmq_stream` and `rabbitmq_prometheus` plugins are enabled.
 
 ##### ActiveMQ
 
@@ -248,6 +250,15 @@ You can monitor Redis activity using the CLI:
 bashin redis
 redis-cli monitor
 ```
+
+##### Prometheus
+
+Prometheus will be available at <http://localhost:9090>. The scrape config lives in `dev-env-config/prometheus/prometheus.yml` and is mounted by any app that needs Prometheus.
+For production, avoid high-cardinality RabbitMQ metrics unless needed. Prefer to keep only specific queues with `metric_relabel_configs`, or disable per-queue metrics at the broker if you only need aggregate health.
+
+##### Grafana
+
+Grafana will be available at <http://localhost:3000> (admin/admin). Provisioning is defined in `dev-env-config/grafana/provisioning/`. Dashboards live inside each app at `apps/<app>/fragments/grafana/dashboards/` and are mounted into Grafana by the app’s compose fragment.
 
 ##### Squid
 
