@@ -4,19 +4,18 @@ This repository contains the code for a development environment that can be used
 
 It provides several hooks for applications to take advantage of, including:
 
-* Docker container creation and launching via docker-compose
-* Automatic creation of commodity systems such as Postgres or Elasticsearch (with further hooks to allow for initial provisoning such as running SQL, Alembic DB upgrades or Elasticsearch index creation)
+- Docker container creation and launching via docker-compose
+- Automatic creation of commodity systems such as Postgres or Elasticsearch (with further hooks to allow for initial provisoning such as running SQL)
 
 ## Getting started
 
 ### Prerequisites
 
-* **Docker and Docker Compose**. Exactly what toolset you use depends on your OS and personal preferences, but recommended are:
-  * [Docker For Mac](https://docs.docker.com/docker-for-mac/)
-  * [Docker for Windows 10](https://docs.docker.com/docker-for-windows/) (See [the wiki](https://github.com/LandRegistry/common-dev-env/wiki/Windows-setup) for more information on getting a working Windows environment set up)
-  * [Docker CE for Linux](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
-* **Git**
-* **Ruby 2.5+**
+- **Docker and Docker Compose**. Exactly what toolset you use depends on your OS and personal preferences, but recommended are:
+  - [Docker Desktop](https://docs.docker.com/desktop/)
+  - [Docker CE for Linux](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+- **Git**
+- **Ruby 3.0+**
 
 ### Git/SSH
 
@@ -33,23 +32,25 @@ To begin:
 
 **TIP:** You can add a # onto the end of the configuration repository location followed by a branch, tag or commit you want to check out, if the default branch is not good enough.
 
+**TIP:** You can specify 'local' to manage your application list without relying on an external Git repository. This is useful when you want complete control over your configuration or are working on a new service that does not have a remote config repo yet. A default `dev-env-config/configuration.yml` will be created for you. You can then manually add applications to that list.
+
 Other `run.sh` parameters are:
 
-* `halt` - stops all containers
-* `reload` - stops all containers then rebuilds and restarts them (including running any commodity fragments)
-* `destroy` - stops/removes all containers, removes all built images (i.e. leaving any pulled from Docker Hub) and resets all dev-env configuration files.
-* `repair` - sets the Docker-compose configuration to use the fragments from applications in _this_ dev-env instance (in case you are switching between several or are in a different terminal window to the one you ran `up` in)
-* `quickup` and `quickreload` - as per `up` and `reload` except they do not update anything from git (apps or config), rebuild Docker images or provision any commodity fragments.
+- `halt` - stops all containers
+- `reload` - stops all containers then rebuilds and restarts them (including running any commodity fragments)
+- `destroy` - stops/removes all containers, removes all built images (i.e. leaving any pulled from external container registries) and resets all dev-env configuration files.
+- `repair` - sets the Docker-compose configuration to use the fragments from applications in _this_ dev-env instance (in case you are switching between several or are in a different terminal window to the one you ran `up` in)
+- `quickup` and `quickreload` - as per `up` and `reload` except they do not update anything from git (apps or config), rebuild Docker images or provision any commodity fragments.
 
 #### Extra functionality
 
-* `--nopull` (or `-n`) can go after `up` or `reload` - e.g. `source run.sh up -n`. This will stop images FROMed in Dockerfiles being checked for updates if a copy already exists on the system. Use to avoid Docker Hub pull rate limits.
+- `--nopull` (or `-n`) can go after `up` or `reload` - e.g. `source run.sh up -n`. This will stop images FROMed in Dockerfiles being checked for updates if a copy already exists on the system. Use to avoid container registry pull rate limits.
 
 ## Usage guide
 
 ### Configuration Repository
 
-This is a Git repository that must contain a single file  -
+This is a Git repository that must contain a single file -
 `configuration.yml`. The configuration file has an `applications` key that contains a list of the applications that will be running in the dev-env, each specifying the URL of their Git repository (the `repo` key) plus which branch/tag/commit should be initially checked out (the `ref` key), and any optional Compose fragment variant name to use (the `variant` key) if appropriate.
 
 The name of the application should match the repository name so that things dependent on the directory structure like volume mappings in the app's compose-fragment.yml will work correctly.
@@ -76,11 +77,11 @@ Docker containers are used to run all apps. So some files are needed to support 
 
 This is used by the environment to construct an application container and then launch it. Standard [Compose Spec](https://github.com/compose-spec/compose-spec/blob/master/spec.md) structure applies - but some recommendations are:
 
-* Container name and service name should match
-* Any ports that need to be accessed from the host machine (as opposed to from other containers) should be mapped
-* A `volumes` entry should map the path of the app folder to wherever the image expects source files to be (if they are to be accessed dynamically, and not copied in at image build time)
-* If the provided log collator is to be used, then a syslog logging driver needs to be present, forwarding to logstash:25826.
-* If you wish to run the container as the host user so you have full access to any files created by the container (this is only a problem on Linux and WSL), environment variables `OUTSIDE_UID` and `OUTSIDE_GID` are provided for use in the fragment as build args (which can then be used in the `Dockerfile` to create a matching user and set them as the container-executor).
+- Container name and service name should match
+- Any ports that need to be accessed from the host machine (as opposed to from other containers) should be mapped
+- A `volumes` entry should map the path of the app folder to wherever the image expects source files to be (if they are to be accessed dynamically, and not copied in at image build time)
+- If the provided log collator is to be used, then a syslog logging driver needs to be present, forwarding to logstash:25826.
+- If you wish to run the container as the host user so you have full access to any files created by the container (this is only a problem on Linux and WSL), environment variables `OUTSIDE_UID` and `OUTSIDE_GID` are provided for use in the fragment as build args (which can then be used in the `Dockerfile` to create a matching user and set them as the container-executor).
 
 Although generally an application should only have itself in its compose fragment, there is no reason why other containers based on other Docker images cannot also be listed in this file, if they are not provided already by the dev-env.
 
@@ -96,18 +97,6 @@ A default `compose-fragment.yml` is still required in addition to any optional v
 
 [Example](snippets/compose-fragment.yml)
 
-##### `/fragments/docker-compose-fragment.yml` and `/fragments/docker-compose-fragment.3.7.yml`
-
-Optional variants of `compose-fragment.yml` with a version of `2` and `3.7` respectively. Support for these is still present for backwards compatibility with older apps.The development environment will select the highest compose file version supplied by _all_ applications in the environment (2 --> 3.7 --> unversioned).
-
-If the environment cannot identify a universal compose file version, then provisioning will fail.
-
-Compose fragment variants are unsupported when used in conjunction with older compose fragment versions.
-
-[2 Example](snippets/docker-compose-fragment.yml)
-
-[3.7 Example](snippets/docker-compose-fragment.3.7.yml)
-
 #### Other
 
 ##### `/Dockerfile`
@@ -120,7 +109,7 @@ This is a file that defines the application's Docker image. The Compose fragment
 
 ##### `/configuration.yml`
 
-This file specifies which commodities the dev-env should create and launch for the application to use. If the commodity must be started before your application, ensure that it is also present in the appropriate section of the `docker-compose-fragment` file (e.g. `depends_on`).
+This file specifies which commodities the dev-env should create and launch for the application to use. If the commodity must be started before your application, ensure that it is also present in the appropriate section of the `compose-fragment` file (e.g. `depends_on`).
 
 The list of allowable commodity values is:
 
@@ -142,10 +131,13 @@ The list of allowable commodity values is:
 16. activemq
 17. ibmmq
 18. localstack
+19. valkey
+20. prometheus
+21. grafana
 
 The file may optionally also indicate that one or more services are resource intensive ("expensive") when starting up. The dev env will start those containers seperately - 3 at a time - and wait until each are declared healthy (or crash and get restarted 10 times) before starting any more.
 
-This requires a healthcheck command specified here or in the Dockerfile/docker-compose-fragment (in which case just use 'docker' in this file).
+This requires a healthcheck command specified here or in the Dockerfile/compose-fragment (in which case just use 'docker' in this file).
 
 If one of these expensive services prefers another one to be considered "healthy" before a startup attempt is made (such as a database, to ensure immediate connectivity and no expensive restarts) then the dependent service can be specified here, with a healthcheck command following the same rules as above.
 
@@ -170,10 +162,6 @@ If you want to spatially enable your database see the following example:
 [Example - Spatial](snippets/spatial_postgres-init-fragment.sql)
 
 The default Postgres port 5432 will be available for connections from other containers, hostname `postgres-13` or `postgres-17`. Port `5434` (for PG13) or `5435` (for PG17) is exposed for external connections from the host.
-
-**`/manage.py`**
-
-This is a standard Alembic management file - if it exists, then a database migration will be run on every `up` or `reload`. This functionality can be enabled by setting the key `perform_alembic_migration` to `true` in `configuration.yml`. It is recommended however that you do your own migration during app startup.
 
 ##### DB2 Community
 
@@ -239,11 +227,11 @@ There are no fragments needed when using this. The Management Console will be av
 
 RabbitMQ 3 is available over port 5672 and TLS on port 5671. RabbitMQ 4 is available over port 5682 and TLS on port 5681.
 
-TLS presents a self signed cert. If verification is needed a copy of the ca certificate is [here](scripts/docker/rabbitmq/certs/ca_certificate.crt). The host has been set to `rabbitmq` for host verification in most common libraries, although will only work within the docker network.
+TLS presents a self signed cert. If verification is needed then use the provided [ca certificate](scripts/docker/rabbitmq/certs/ca_certificate.crt). The host has been set to `rabbitmq` for host verification in most common libraries, although will only work within the docker network.
 
 MTLS is not enabled, although a [client certificate pem](scripts/docker/rabbitmq/certs/client_certificate.pem) and [client key pem](scripts/docker/rabbitmq/certs/client_key.pem) have been generated as part of the certificate set for potential future use.
 
-Currently, only the `rabbitmq_management`, `rabbitmq_consistent_hash_exchange`, `rabbitmq_shovel`, `rabbitmq_shovel_management` and `rabbitmq_stream` plugins are enabled.
+Currently, only the `rabbitmq_management`, `rabbitmq_consistent_hash_exchange`, `rabbitmq_shovel`, `rabbitmq_shovel_management`, `rabbitmq_stream` and `rabbitmq_prometheus` plugins are enabled.
 
 ##### ActiveMQ
 
@@ -264,6 +252,15 @@ bashin redis
 redis-cli monitor
 ```
 
+##### Prometheus
+
+Prometheus will be available at <http://localhost:9090>. The scrape config lives in `dev-env-config/prometheus/prometheus.yml` and is mounted by any app that needs Prometheus.
+For production, avoid high-cardinality RabbitMQ metrics unless needed. Prefer to keep only specific queues with `metric_relabel_configs`, or disable per-queue metrics at the broker if you only need aggregate health.
+
+##### Grafana
+
+Grafana will be available at <http://localhost:3000> (admin/admin). Provisioning is defined in `dev-env-config/grafana/provisioning/`. Dashboards live inside each app at `apps/<app>/fragments/grafana/dashboards/` and are mounted into Grafana by the app’s compose fragment.
+
 ##### Squid
 
 There are no fragments needed when using this. An HTTP proxy will be made available to all containers at runtime, at hostname `squid` and port 3128. It will be available on the host on port 30128.
@@ -280,19 +277,19 @@ The OpenLDAP container has been customised with a schema similar to that present
 
 From within a Docker container:
 
-* Host: openldap
-* Port: 389 (the default LDAP port)
+- Host: openldap
+- Port: 389 (the default LDAP port)
 
 From the host system:
 
-* Host: localhost
-* Port: 1389
+- Host: localhost
+- Port: 1389
 
 Other parameters:
 
-* Base DN (AKA search base, search path, etc.): `dc=dev,dc=domain`
-* Bind DN (user account for administration): `cn=admin,dc=dev,dc=domain`
-* Admin password: `admin`
+- Base DN (AKA search base, search path, etc.): `dc=dev,dc=domain`
+- Bind DN (user account for administration): `cn=admin,dc=dev,dc=domain`
+- Admin password: `admin`
 
 **`/fragments/*.ldif`**
 
@@ -308,14 +305,14 @@ When running, Keycloak's admin console is available at <http://localhost:8180/> 
 
 Applications using OAuth flows or the OpenID Connect protocol can use Keycloak for this purpose with the following configuration parameters:
 
-* Client ID: `oauth-client`
-* Authentication URL: <http://localhost:8180/auth/realms/development/protocol/openid-connect/auth>  (must be resolvable by the user agent, hence we use `localhost` assuming that the user agent will be a web browser on the host system)
-* Token URL: <http://keycloak:8080/auth/realms/development/protocol/openid-connect/token> (use `localhost:8180` if connecting from the host system)
-* OpenID Connect configuration endpoint: <http://keycloak:8080/auth/realms/development/.well-known/openid-configuration> (use `localhost:8180` if connecting from the host system)
+- Client ID: `oauth-client`
+- Authentication URL: <http://localhost:8180/auth/realms/development/protocol/openid-connect/auth> (must be resolvable by the user agent, hence we use `localhost` assuming that the user agent will be a web browser on the host system)
+- Token URL: <http://keycloak:8080/auth/realms/development/protocol/openid-connect/token> (use `localhost:8180` if connecting from the host system)
+- OpenID Connect configuration endpoint: <http://keycloak:8080/auth/realms/development/.well-known/openid-configuration> (use `localhost:8180` if connecting from the host system)
 
 JWT tokens issued from the `development` realm have been configured to mimic those issued by Microsoft ADFS servers. In particular, the LDAP `cn` field is mapped to the `UserName` claim in JWT tokens along with the `Office` claim mapped from the `physicalDeliveryOfficeName` in the LDAP database and the `group` claim listing the user's group memberships.
 
-A [JSON export](scripts/docker/auth/keycloak/development_realm.json) of the `development` realm is used to configure the realm. If further configuration of the realm is required, you can make changes in the admin console and re-export the realm using the procedure described in "Exporting a realm" [here](https://hub.docker.com/r/jboss/keycloak/#exporting-a-realm).
+A [JSON export](scripts/docker/auth/keycloak/development_realm.json) of the `development` realm is used to configure the realm. If further configuration of the realm is required, you can make changes in the admin console and re-export the realm using the procedure described in "Exporting a realm" section of the [documentation](https://hub.docker.com/r/jboss/keycloak/#exporting-a-realm).
 
 The exported JSON can then be merged back into this repository and reused.
 
@@ -326,13 +323,13 @@ Use the following configuration to connect your application:
 
 From within a Docker container:
 
-* Host: cadence
-* Port: 7933 (default cadence frontend port)
+- Host: cadence
+- Port: 7933 (default cadence frontend port)
 
 From the host system:
 
-* Host: localhost
-* Port: 7933
+- Host: localhost
+- Port: 7933
 
 ###### Cadence Web
 
@@ -341,7 +338,7 @@ cadence core services.
 
 _Running Cadence web locally_
 
-* In a web browser enter <http://localhost:5004>
+- In a web browser enter <http://localhost:5004>
 
 ###### Localstack
 
@@ -349,9 +346,22 @@ _Running Cadence web locally_
 
 A default Localstack configuration is provided with a minimal number of enabled services available (S3 only at present). Localstack does not _require_ the use of any other external configuration file (as applications can manage buckets programatically through methods such as the [AWS SDK](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/examples-s3-buckets.html)).
 
-However, if additional configuration (such as new buckets) are necessary before application startup, you can use a `localstack-init-fragment.sh` to perform this provisioning; an example of which is provided [here](snippets/localstack-init-fragment.sh).
+However, if additional configuration (such as new buckets) are necessary before application startup, you can use a `localstack-init-fragment.sh` to perform this provisioning; like [this example](snippets/localstack-init-fragment.sh).
 
 Localstack is available at <http://localstack:4566> within the Docker network, and <http://localhost:4566> on the host.
+
+###### Valkey
+
+[Valkey](https://valkey.io/) is a key-value store forked from Redis.
+
+There are no fragments needed when using this. Valkey will be available at <http://localhost:6389> on the host and <http://valkey:6379> inside the Docker network.
+
+You can monitor Valkey activity using the CLI:
+
+```shell
+bashin redis
+redis-cli monitor
+```
 
 #### Other files
 
@@ -369,23 +379,19 @@ This file contains details of hosts to be forwarded on the host; if it exists th
 
 [Example](snippets/host-fragments.yml)
 
-**`/fragments/docker-compose-<any value>-fragment.yml`**
-
-This file can be used to override the default settings for a docker container such as environment variables. It will not be loaded by default but can be applied using the add-to-docker-compose alias.
-
 ## Logging
 
 Any messages that get forwarded to the logstash\* container on TCP port 25826 will be output both in the logstash container's own stdout (so `livelogs logstash` can be used to monitor all apps) and in ./logs/log.txt.
 
 \* Note that it is not really logstash, but we kept the container name that for backwards compatibility purposes.
 
-If you want to make use of this functionality, ensure that `logstash` is also present in the appropriate section of the `docker-compose-fragment` file (e.g. `depends_on`).
+If you want to make use of this functionality, ensure that `logstash` is also present in the appropriate section of the `compose-fragment` file (e.g. `depends_on`).
 
 ## Hints and Tips
 
-* Ensure that you give Docker enough CPU and memory to run all your apps.
-* The `run.sh destroy` command should be a last resort, as you will have to rebuild all images from scratch. Try the `fullreset` alias as that will just remove your app containers and recreate them. They are most likely to be the source of any corruption. Remember to alter `.commodities.yml` and `.custom_provision.yml` if you need to, and `run.sh reload`.
-* A memory limit of 384mb is set for intermediate containers during the image build process - but only if using Docker Compose V1 and you have Buildkit disabled in advanced Docker settings.
+- Ensure that you give Docker enough CPU and memory to run all your apps.
+- The `run.sh destroy` command should be a last resort, as you will have to rebuild all images from scratch. Try the `fullreset` alias as that will just remove your app containers and recreate them. They are most likely to be the source of any corruption. Remember to alter `.commodities.yml` and `.custom_provision.yml` if you need to, and `run.sh reload`.
+- A memory limit of 384mb is set for intermediate containers during the image build process - but only if using Docker Compose V1 and you have Buildkit disabled in advanced Docker settings.
 
 ### Useful commands
 
@@ -418,8 +424,8 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available a
 
 ## Authors
 
-* Simon Chapman ([GitHub](https://github.com/sdchapman))
-* Ian Harvey ([GitHub](https://github.com/IWHarvey))
+- Simon Chapman ([GitHub](https://github.com/sdchapman))
+- Ian Harvey ([GitHub](https://github.com/IWHarvey))
 
 See also the list of [contributors](https://github.com/LandRegistry/common-dev-env/contributors) who participated in this project.
 
@@ -429,4 +435,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* Matthew Pease ([GitHub](https://github.com/Skablam)) - for helping create the original internal version
+- Matthew Pease ([GitHub](https://github.com/Skablam)) - for helping create the original internal version
