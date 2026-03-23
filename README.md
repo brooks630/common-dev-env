@@ -221,17 +221,33 @@ This is a file that contains stub mappings that Wiremock will pick up and use, a
 
 This is a directory that can contain multiple stub mappings files that Wiremock will pick up and use. The files should all be in the same format as the example above. If such a wiremock directory exists, it will take precedence over any `wiremock-fragment.json` file.
 
-##### RabbitMQ
+##### RabbitMQ 3
 
-There are no fragments needed when using this. The Management Console will be available on <http://localhost:15672> for RabbitMQ 3, or <http://localhost:15682> for RabbitMQ 4 (guest/guest).
+There are no fragments needed when using this. The Management Console will be available on <http://localhost:15672> (guest/guest).
 
-RabbitMQ 3 is available over port 5672 and TLS on port 5671. RabbitMQ 4 is available over port 5682 and TLS on port 5681.
+RabbitMQ 3 is available over port 5672 and TLS on port 5671.
 
 TLS presents a self signed cert. If verification is needed then use the provided [ca certificate](scripts/docker/rabbitmq/certs/ca_certificate.crt). The host has been set to `rabbitmq` for host verification in most common libraries, although will only work within the docker network.
 
 MTLS is not enabled, although a [client certificate pem](scripts/docker/rabbitmq/certs/client_certificate.pem) and [client key pem](scripts/docker/rabbitmq/certs/client_key.pem) have been generated as part of the certificate set for potential future use.
 
 Currently, only the `rabbitmq_management`, `rabbitmq_consistent_hash_exchange`, `rabbitmq_shovel`, `rabbitmq_shovel_management`, `rabbitmq_stream` and `rabbitmq_prometheus` plugins are enabled.
+
+The default queue type for queues in RabbitMQ 3 is `classic`.
+
+##### RabbitMQ 4
+
+There are no fragments needed when using this. The Management Console will be available on <http://localhost:15682> (guest/guest).
+
+RabbitMQ 4 is available over port 5682 and TLS on port 5681.
+
+TLS presents a self signed cert. If verification is needed then use the provided [ca certificate](scripts/docker/rabbitmq/certs/ca_certificate.crt). The host has been set to `rabbitmq` for host verification in most common libraries, although will only work within the docker network.
+
+MTLS is not enabled, although a [client certificate pem](scripts/docker/rabbitmq/certs/client_certificate.pem) and [client key pem](scripts/docker/rabbitmq/certs/client_key.pem) have been generated as part of the certificate set for potential future use.
+
+Currently, only the `rabbitmq_management`, `rabbitmq_consistent_hash_exchange`, `rabbitmq_shovel`, `rabbitmq_shovel_management`, `rabbitmq_stream` and `rabbitmq_prometheus` plugins are enabled.
+
+The default queue type for queues in RabbitMQ 4 is `quorum`.
 
 ##### ActiveMQ
 
